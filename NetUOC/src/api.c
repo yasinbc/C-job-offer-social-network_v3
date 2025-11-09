@@ -353,9 +353,43 @@ tApiError api_getPerson(tApiData data, const char *document, tCSVEntry *entry) {
 	/////////////////////////////////
 	// PR1_4a
 	/////////////////////////////////
-	
+
+	// Check if document or entry are empty
+	if (document == NULL || entry == NULL) {
+		return E_MEMORY_ERROR;
+	}
+
+	// Find person in people array
+	int personIndex = people_find(data.people, document);
+	if (personIndex < 0) {
+		return E_PERSON_NOT_FOUND;
+	}
+
+	// Get person data
+	tPerson person = data.people.elems[personIndex];
+
+	// Create a buffer for the CSV string (2048 characters as mentioned in the requirements)
+	char buffer[2048];
+
+	// Format person data as CSV: "document;name;surname;phone;email;address;cp;birthday"
+	sprintf(buffer, "%s;%s;%s;%s;%s;%s;%s;%02d/%02d/%04d",
+		person.document,
+		person.name,
+		person.surname,
+		person.phone,
+		person.email,
+		person.address,
+		person.cp,
+		person.birthday.day, person.birthday.month, person.birthday.year
+	);
+
+	// Parse the CSV string into the entry structure
+	csv_initEntry(entry);
+	csv_parseEntry(entry, buffer, "PERSON");
+
+	return E_SUCCESS;
 	/////////////////////////////////
-    return E_NOT_IMPLEMENTED;
+    //return E_NOT_IMPLEMENTED;
 }
 
 // Get company data
@@ -363,9 +397,39 @@ tApiError api_getCompany(tApiData data, const char* cif, tCSVEntry *entry) {
 	/////////////////////////////////
 	// PR1_4b
 	/////////////////////////////////
-	
+
+	// Check if cif or entry are empty
+	if (cif == NULL || entry == NULL) {
+		return E_MEMORY_ERROR;
+	}
+
+	// Find company by CIF
+	tCompany* company = companyList_find(data.companies, cif);
+	if (company == NULL) {
+		return E_COMPANY_NOT_FOUND;
+	}
+
+	// Create a buffer for CSV string
+	char buffer[2048];
+
+	// Format company data as CSV: "CIF;name;foundationDate;minSize;maxSize;hasAIEnabled;founderDocument"
+	sprintf(buffer, "%s;%s;%02d/%02d/%04d;%d;%d;%d;%s",
+		company->info.cif,
+		company->info.name,
+		company->info.foundation.day, company->info.foundation.month, company->info.foundation.year,
+		company->info.minSize,
+		company->info.maxSize,
+		company->info.hasAIEnabled ? 1 : 0, // Convert boolean to integer (1 or 0)
+		company->founder->document // Access the founder's document
+	);
+
+	// Parse CSV string into the entry structure
+	csv_initEntry(entry);
+	csv_parseEntry(entry, buffer, "COMPANY");
+
+	return E_SUCCESS;
 	/////////////////////////////////
-    return E_NOT_IMPLEMENTED;
+    //return E_NOT_IMPLEMENTED;
 }
 
 // Get jobs data
@@ -373,9 +437,50 @@ tApiError api_getJobs(tApiData data, tCSVData *jobs) {
 	/////////////////////////////////
 	// PR1_4c
 	/////////////////////////////////
-	
+
+	// Check if jobs is empty
+	if (jobs == NULL) {
+		return E_MEMORY_ERROR;
+	}
+
+	// Initialize CSV data structure
+	csv_init(jobs);
+
+	// Iterate all companies
+	tCompanyListNode* currentCompany = data.companies.first;
+	while (currentCompany != NULL) {
+		// Iterate all jobs in the current company
+		for (int i = 0; i < currentCompany->elem.jobs.count; i++) {
+			// Create a buffer for the CSV string
+			char buffer[2048];
+
+			// Format the job data as CSV
+			sprintf(buffer, "%d;%s;%d;%02d/%02d/%04d;%02d/%02d/%04d;%d;%d;%s",
+				currentCompany->elem.jobs.elems[i].id,
+				currentCompany->elem.jobs.elems[i].role,
+				currentCompany->elem.jobs.elems[i].nPos,
+				currentCompany->elem.jobs.elems[i].startDate.day,
+				currentCompany->elem.jobs.elems[i].startDate.month,
+				currentCompany->elem.jobs.elems[i].startDate.year,
+				currentCompany->elem.jobs.elems[i].endDate.day,
+				currentCompany->elem.jobs.elems[i].endDate.month,
+				currentCompany->elem.jobs.elems[i].endDate.year,
+				currentCompany->elem.jobs.elems[i].minSalary,
+				currentCompany->elem.jobs.elems[i].maxSalary,
+				currentCompany->elem.info.cif
+			);
+
+			// Add job to the CSV data
+			csv_addStrEntry(jobs, buffer, "JOB");
+		}
+
+		// Move to the next company
+		currentCompany = currentCompany->next;
+	}
+
+	return E_SUCCESS;
 	/////////////////////////////////
-    return E_NOT_IMPLEMENTED;
+    //return E_NOT_IMPLEMENTED;
 }
 
 // Get jobs data by company and salary
@@ -383,7 +488,53 @@ tApiError api_getJobsByCompanyAndSalary(tApiData data, tCSVData *jobs, const cha
 	/////////////////////////////////
 	// PR1_4d
 	/////////////////////////////////
-	
+
+	// Check if jobs or companyCif are empty
+	if (jobs == NULL || companyCif == NULL) {
+		return E_MEMORY_ERROR;
+	}
+
+	// Initialize CSV data structure
+	csv_init(jobs);
+
+	// Find company by CIF
+	tCompany* company = companyList_find(data.companies, companyCif);
+	if (company == NULL) {
+		// If company does not exist, return success with empty result
+		return E_SUCCESS;
+	}
+
+	// Iterate all jobs in the company
+	for (int i = 0; i < company->jobs.count; i++) {
+		// Check if salary is within job's salary range
+		if (salary >= company->jobs.elems[i].minSalary &&
+			salary <= company->jobs.elems[i].maxSalary) {
+
+			// Create a buffer for CSV string
+			char buffer[2048];
+
+			// Format job data as CSV
+			sprintf(buffer, "%d;%s;%d;%02d/%02d/%04d;%02d/%02d/%04d;%d;%d;%s",
+				company->jobs.elems[i].id,
+				company->jobs.elems[i].role,
+				company->jobs.elems[i].nPos,
+				company->jobs.elems[i].startDate.day,
+				company->jobs.elems[i].startDate.month,
+				company->jobs.elems[i].startDate.year,
+				company->jobs.elems[i].endDate.day,
+				company->jobs.elems[i].endDate.month,
+				company->jobs.elems[i].endDate.year,
+				company->jobs.elems[i].minSalary,
+				company->jobs.elems[i].maxSalary,
+				company->info.cif
+			);
+
+			// Add job to the CSV data
+			csv_addStrEntry(jobs, buffer, "JOB");
+			}
+	}
+
+	return E_SUCCESS;
 	/////////////////////////////////
-    return E_NOT_IMPLEMENTED;
+    //return E_NOT_IMPLEMENTED;
 }
