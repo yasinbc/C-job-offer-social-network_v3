@@ -1,0 +1,25 @@
+#ifndef __TEST_DATA__H
+#define __TEST_DATA__H
+
+// Define test data for PR1
+const char* test_data_pr1_str = "PERSON;98765432J;Hendrik;Lorentz;987654321;hendrik.lorentz@example.com;his street, 5;00001;27/08/1954\n" \
+								"PERSON;33365111X;Marie;Curie;+33123456789;marie.curie@example.com;Radium street, 88;54321;07/10/1867\n" \
+								"PERSON;55565432Z;Nils;Gustaf Dalen;555123123;nils.gustaf@example.com;Picadilly street, 123;12345;25/11/1972\n" \
+								"PERSON;12345672C;Anne;Huiller;666789789;anne.huiller@example.com;rue percebe, 125;22222;12/01/1969\n" \
+								"PERSON;47051307Z;James;Bond;707070707;bond.jamesbond@example.com;Downing street, 10;07077;12/01/1952\n" \
+								"COMPANY;G60667813;Universitat Oberta de Catalunya;06/10/1994;1000;9999;1;98765432J\n" \
+								"COMPANY;B90234567;TechNova Solutions;15/03/2010;50;300;1;33365111X\n" \
+								"COMPANY;C75891234;GreenFuture Energy;22/09/2005;20;150;0;55565432Z\n" \
+								"COMPANY;D60487219;NeuralEdge Systems;11/07/2018;10;80;1;12345672C\n" \
+								"COMPANY;E50938476;BlueWave Robotics;03/12/2016;30;200;1;47051307Z\n" \
+								"JOB;1;Junior software developer;1;01/10/2025;20/11/2025;20000;35000;G60667813\n" \
+								"JOB;2;Chef assistant;1;15/11/2025;15/02/2026;20000;25000;G60667813\n" \
+								"JOB;3;Course instructor;2;15/10/2025;31/10/2025;19000;22000;G60667813\n" \
+								"JOB;4;Senior software developer;1;15/10/2025;15/12/2025;30000;33000;B90234567\n" \
+								"JOB;5;Data scientist;1;15/10/2025;15/12/2025;30000;35000;B90234567\n" \
+								"JOB;6;Chef;2;15/10/2025;31/10/2025;20000;45000;C75891234\n" \
+								"JOB;7;English Teacher;2;15/10/2025;31/10/2025;16576;20000;C75891234\n" \
+								"JOB;8;Computer scientist;1;07/08/2025;01/11/2025;17000;19000;C75891234\n" \
+								"JOB;9;CTO;1;07/08/2025;01/11/2025;47000;59500;D60487219\n";
+                                                  
+#endif // TEST_DATA__H
